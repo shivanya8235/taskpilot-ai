@@ -1,0 +1,106 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Acme Finance | Invoice Manager</title>
+  <style>
+    body { font: 15px Arial, sans-serif; background: #f4f6fb; margin: 0; color: #202938; }
+    header { background: #20294a; color: white; padding: 22px 7%; }
+    main { max-width: 720px; margin: 40px auto; padding: 28px; background: white; border: 1px solid #e2e6ef; border-radius: 14px; }
+    h1 { margin-top: 0; font-size: 25px; }
+    p { color: #687386; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    label { display: block; font-size: 12px; font-weight: bold; margin-bottom: 7px; }
+    input, select { width: 100%; box-sizing: border-box; padding: 11px; border: 1px solid #d8deea; border-radius: 7px; font-size: 14px; }
+    .field { margin-bottom: 17px; }
+    button { background: #5149db; color: white; border: 0; padding: 12px 18px; border-radius: 7px; cursor: pointer; font-weight: bold; }
+    #result { margin-top: 20px; padding: 14px; border-radius: 8px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    #result:empty { display: none; }
+    #result[data-status="success"] { background: #e9f9f0; color: #176b49; }
+    #result[data-status="error"] { background: #fff0f0; color: #a52b2b; }
+    @media(max-width: 560px) { .grid { grid-template-columns: 1fr; } main { margin: 18px; padding: 20px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>ACME FINANCE</strong>
+    <div style="margin-top:6px;font-size:12px">Internal invoice management</div>
+  </header>
+  <main>
+    <h1>Create invoice record</h1>
+    <p>Enter invoice information into the internal company application.</p>
+    <form id="invoice-form">
+      <div class="grid">
+        <div class="field">
+          <label for="invoice_number">Invoice number</label>
+          <input id="invoice_number" required>
+        </div>
+        <div class="field">
+          <label for="company">Company</label>
+          <input id="company" required>
+        </div>
+        <div class="field">
+          <label for="invoice_date">Invoice date</label>
+          <input id="invoice_date" required>
+        </div>
+        <div class="field">
+          <label for="amount">Amount</label>
+          <input id="amount" type="number" min="0" step="0.01" required>
+        </div>
+        <div class="field">
+          <label for="currency">Currency</label>
+          <input id="currency" required>
+        </div>
+        <div class="field">
+          <label for="due_date">Due date</label>
+          <input id="due_date" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="status">Status</label>
+        <select id="status">
+          <option>Unpaid</option>
+          <option>Paid</option>
+          <option>Pending approval</option>
+        </select>
+      </div>
+      <button type="submit">Save invoice</button>
+    </form>
+    <div id="result" role="status" aria-live="polite"></div>
+  </main>
+  <script>
+    const form = document.querySelector("#invoice-form");
+    const result = document.querySelector("#result");
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      result.dataset.status = "";
+      result.textContent = "Saving invoice...";
+      const invoice = {
+        invoice_number: document.querySelector("#invoice_number").value.trim(),
+        company: document.querySelector("#company").value.trim(),
+        invoice_date: document.querySelector("#invoice_date").value.trim(),
+        amount: Number(document.querySelector("#amount").value),
+        currency: document.querySelector("#currency").value.trim(),
+        due_date: document.querySelector("#due_date").value.trim(),
+        status: document.querySelector("#status").value
+      };
+      try {
+        const response = await fetch("/api/invoices", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(invoice)
+        });
+        const body = await response.json();
+        if (!response.ok || !body.success) throw new Error(body.error || "Save failed");
+        result.dataset.status = "success";
+        result.textContent = (body.already_existed ? "Invoice already exists. " : "Invoice saved. ")
+          + "Record ID: " + body.data.record_id;
+      } catch (error) {
+        result.dataset.status = "error";
+        result.textContent = "Could not save invoice: " + error.message;
+      }
+    });
+  </script>
+</body>
+</html>

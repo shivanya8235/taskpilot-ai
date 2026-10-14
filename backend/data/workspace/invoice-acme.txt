@@ -1,0 +1,7 @@
+﻿Invoice Number: INV-2026-1042
+Company: Acme Corp
+Invoice Date: October 10, 2026
+Amount: 24500.00
+Currency: INR
+Due Date: October 25, 2026
+Status: Unpaid
