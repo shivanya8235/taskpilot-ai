@@ -186,9 +186,9 @@ function App() {
                     <div className="log-meta">
                       {new Date(log.time).toLocaleTimeString()} · {log.status}
                     </div>
-                    {log.details && (
+                    {log.details !== undefined && log.details !== null && (
                       <pre className="details">
-                        {JSON.stringify(log.details, null, 2)}
+                        {JSON.stringify(log.details, null, 2) ?? String(log.details)}
                       </pre>
                     )}
                   </div>
